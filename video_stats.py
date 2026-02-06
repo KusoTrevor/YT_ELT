@@ -1,5 +1,6 @@
 import requests
 import json
+from datetime import date
 import os
 from dotenv import load_dotenv
 
@@ -115,8 +116,33 @@ def extract_video_data(video_ids):
     except requests.exceptions.RequestException as e:
         raise e
 
+def check_and_remove_file(file_path):
+    """
+    Checks if a file exists at the given file_path and removes it if found.
     
+    Args:
+        file_path (str): The full path to the file.
+    """
+    try:
+        os.remove(file_path)
+        print(f"File '{file_path}' removed successfully.")
+    except FileNotFoundError:
+        print(f"Error: File '{file_path}' not found.")
+    except OSError as e:
+        # Handle other potential OS errors (e.g., permissions issues)
+        print(f"Error removing file '{file_path}': {e}")
 
+
+
+def save_to_json(extracted_data): 
+    file_path = f"./data/YT_data_{date.today()}.json"
+
+    check_and_remove_file(file_path)
+
+    with open(file_path, 'w', encoding='utf-8') as json_outfile:
+        json.dump(extracted_data, json_outfile, indent=4, ensure_ascii=False)
+    
+    print(f"File '{file_path}' created successfully.")
 
 if __name__ == '__main__':
     # print('get_playlist_id will be executed')
@@ -126,6 +152,7 @@ if __name__ == '__main__':
     video_ids = get_video_ids(playlistId)
 
     # print(extract_video_data(video_ids))
-    extract_video_data(video_ids)
+    video_data = extract_video_data(video_ids)
+    save_to_json(video_data)
 # else:
 #     print('get_playlist_id will not be executed')
