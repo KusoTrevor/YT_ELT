@@ -81,7 +81,7 @@ def extract_video_data(video_ids):
         for video_id in range(0, len(video_id_list), batch_size):
             yield video_id_list[video_id: video_id + batch_size]
 
-    try:
+    try: # using try..except to catch any exceptions that may occur during the API call
         for batch in batch_list(video_ids, maxResults):
             video_ids_str = ",".join(batch)
 
@@ -89,7 +89,7 @@ def extract_video_data(video_ids):
 
             response = requests.get(url)
 
-            response.raise_for_status()
+            response.raise_for_status() # raise an exception for HTTP errors
 
             data = response.json()
 
@@ -113,8 +113,8 @@ def extract_video_data(video_ids):
 
         return extracted_data
         
-    except requests.exceptions.RequestException as e:
-        raise e
+    except requests.exceptions.RequestException as e: 
+        raise e # Re-raise the exception for the calling function to handle
 
 def check_and_remove_file(file_path):
     """
