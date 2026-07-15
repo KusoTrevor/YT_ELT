@@ -1,4 +1,4 @@
-from airflow.decorators import dag
+from airflow import DAG
 import pendulum
 
 from datetime import timedelta, datetime
@@ -22,7 +22,7 @@ default_args = {
     # 'end_date': datetime(2025, 12, 31, tzinfo=local_tz),
 }
 
-with dag(
+with DAG(
     dag_id='produce_yt_video_json',
     default_args=default_args,
     description='A DAG to extract, transform, and load YouTube video statistics for MrBeast channel via json file',

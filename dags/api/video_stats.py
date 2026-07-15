@@ -1,3 +1,4 @@
+import os
 import requests
 import json
 from datetime import date
@@ -6,7 +7,7 @@ from datetime import date
 # from dotenv import load_dotenv
 # load_dotenv(dotenv_path='./.env')
 
-from airflow.decorators import dag, task
+from airflow.decorators import task
 from airflow.models import Variable
 
 
@@ -90,7 +91,7 @@ def extract_video_data(video_ids):
         for batch in batch_list(video_ids, maxResults):
             video_ids_str = ",".join(batch)
 
-            url = f'https://youtube.googleapis.com/youtube/v3/videos?part=contentDetails&part=snippet&part=statistics&id={video_ids_str}8&key={API_KEY}'
+            url = f'https://youtube.googleapis.com/youtube/v3/videos?part=contentDetails&part=snippet&part=statistics&id={video_ids_str}&key={API_KEY}'
 
             response = requests.get(url)
 
@@ -121,6 +122,7 @@ def extract_video_data(video_ids):
     except requests.exceptions.RequestException as e: 
         raise e # Re-raise the exception for the calling function to handle
 
+@task
 def check_and_remove_file(file_path):
     """
     Checks if a file exists at the given file_path and removes it if found.
@@ -138,7 +140,7 @@ def check_and_remove_file(file_path):
         print(f"Error removing file '{file_path}': {e}")
 
 
-
+@task
 def save_to_json(extracted_data): 
     file_path = f"./data/YT_data_{date.today()}.json"
 
