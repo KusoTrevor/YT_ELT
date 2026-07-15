@@ -24,7 +24,7 @@ def load_path():
             data = json.load(raw_data)
 
         return data  # Return the loaded data for further processing
-    except filenotfoundError:
+    except FileNotFoundError:
         logger.error(f"File not found: {file_path}. Please check the path and try again.")
         raise
     except json.JSONDecodeError:
