@@ -81,7 +81,7 @@ def create_table_if_not_exists(schema_name, table_name):
 
     close_conn_cursor(conn, cursor)  # Close the connection and cursor to avoid resource leaks
 
-def get_video_ids_from_table(schema_name, cursor    ):
+def get_video_ids_from_table(cursor, schema_name):
     """
     Retrieve all video IDs from the specified table in the Postgres database.
 
@@ -96,11 +96,9 @@ def get_video_ids_from_table(schema_name, cursor    ):
 
     video_ids = []
     try:
-        cursor.execute(f"SELECT Video_ID FROM {schema_name}.{table_name};")
+        cursor.execute(f"SELECT Video_ID FROM {schema_name}.{table};")
         video_ids = [row[0] for row in cursor.fetchall()]
     except Exception as e:
-        print(f"Error occurred while fetching video IDs: {e}")
-    finally:
-        close_conn_cursor(conn, cursor)
+        print(f"Error occurred while fetching video IDs: {e}")        
 
     return video_ids
