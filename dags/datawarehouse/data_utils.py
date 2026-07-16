@@ -1,58 +1,41 @@
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from psycopg2.extras import RealDictCursor
 
-table = 'yt_api'
+table = "yt_api"
+
 
 def get_conn_cursor():
-    """
-    Get a connection and cursor to the Postgres database using Airflow's PostgresHook.
-
-    Returns:
-        conn: A connection object to the Postgres database.
-        cursor: A cursor object for executing queries.
-    """
-    hook = PostgresHook(postgres_conn_id='postgres_db_yt_elt', database='elt_db')
+    hook = PostgresHook(postgres_conn_id="postgres_db_yt_elt", database="elt_db")
     conn = hook.get_conn()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    return conn, cursor
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    return conn, cur
 
-def close_conn_cursor(conn, cursor):
-    """
-    Close the cursor and connection to the Postgres database.
 
-    Args:
-        conn: A connection object to the Postgres database.
-        cursor: A cursor object for executing queries.
-    """
-    cursor.close()  # Close the cursor to avoid resource leaks
-    conn.close()  # Close the connection to avoid resource leaks
+def close_conn_cursor(conn, cur):
+    cur.close()
+    conn.close()
 
-def create_schema_if_not_exists(schema_name):
-    """
-    Create a schema in the Postgres database if it does not already exist.
 
-    Args:
-        cursor: A cursor object for executing queries.
-        schema_name: The name of the schema to create.
-    """
+def create_schema(schema):
 
-    conn, cursor = get_conn_cursor()
+    conn, cur = get_conn_cursor()
 
-    schema_query = f"CREATE SCHEMA IF NOT EXISTS {schema_name};"
+    schema_sql = f"CREATE SCHEMA IF NOT EXISTS {schema};"
 
-    cursor.execute(schema_query)  # Execute the query to create the schema if it doesn't exist
+    cur.execute(schema_sql)
 
-    conn.commit()  # Commit the transaction to save changes
+    conn.commit()
 
-    close_conn_cursor(conn, cursor)  # Close the connection and cursor to avoid resource leaks
+    close_conn_cursor(conn, cur)
 
-def create_table_if_not_exists(schema_name, table_name):
 
-    conn, cursor = get_conn_cursor()
+def create_table(schema):
 
-    if schema_name == 'staging':
-        table_query = f"""
-        CREATE TABLE IF NOT EXISTS {schema_name}.{table_name} (
+    conn, cur = get_conn_cursor()
+
+    if schema == "staging":
+        table_sql = f"""
+                CREATE TABLE IF NOT EXISTS {schema}.{table} (
                     "Video_ID" VARCHAR(11) PRIMARY KEY NOT NULL,
                     "Video_Title" TEXT NOT NULL,
                     "Upload_Date" TIMESTAMP NOT NULL,
@@ -60,45 +43,34 @@ def create_table_if_not_exists(schema_name, table_name):
                     "Video_Views" INT,
                     "Likes_Count" INT,
                     "Comments_Count" INT   
-        );
-        """
+                );
+            """
     else:
-        table_query = f"""
-        CREATE TABLE IF NOT EXISTS {schema_name}.{table_name} (
-                    "Video_ID" VARCHAR(11) PRIMARY KEY NOT NULL,
-                    "Video_Title" TEXT NOT NULL,
-                    "Upload_Date" TIMESTAMP NOT NULL,
-                    "Duration" VARCHAR(20) NOT NULL,
-                    "Video_Views" INT,
-                    "Likes_Count" INT,
-                    "Comments_Count" INT   
-        );
-        """
+        table_sql = f"""
+                  CREATE TABLE IF NOT EXISTS {schema}.{table} (
+                      "Video_ID" VARCHAR(11) PRIMARY KEY NOT NULL,
+                      "Video_Title" TEXT NOT NULL,
+                      "Upload_Date" TIMESTAMP NOT NULL,
+                      "Duration" TIME NOT NULL,
+                      "Video_Type" VARCHAR(10) NOT NULL,
+                      "Video_Views" INT,
+                      "Likes_Count" INT,
+                      "Comments_Count" INT    
+                  ); 
+              """
 
-    cursor.execute()
+    cur.execute(table_sql)
 
-    conn.commit()  # Commit the transaction to save changes
+    conn.commit()
 
-    close_conn_cursor(conn, cursor)  # Close the connection and cursor to avoid resource leaks
+    close_conn_cursor(conn, cur)
 
-def get_video_ids_from_table(cursor, schema_name):
-    """
-    Retrieve all video IDs from the specified table in the Postgres database.
 
-    Args:
-        schema_name: The name of the schema where the table is located.
-        table_name: The name of the table from which to retrieve video IDs.
+def get_video_ids(cur, schema):
 
-    Returns:
-        A list of video IDs.
-    """
-    conn, cursor = get_conn_cursor()
+    cur.execute(f"""SELECT "Video_ID" FROM {schema}.{table};""")
+    ids = cur.fetchall()
 
-    video_ids = []
-    try:
-        cursor.execute(f"SELECT Video_ID FROM {schema_name}.{table};")
-        video_ids = [row[0] for row in cursor.fetchall()]
-    except Exception as e:
-        print(f"Error occurred while fetching video IDs: {e}")        
+    video_ids = [row["Video_ID"] for row in ids]
 
     return video_ids
