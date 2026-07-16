@@ -1,32 +1,23 @@
 import json
 from datetime import date
-
 import logging
 
 logger = logging.getLogger(__name__)
 
-def load_path():
-    """
-    Load data from a specified path into the data warehouse.
-    This function reads data files from the given path and processes them
-    for insertion into the data warehouse.
 
-    Returns:
-        None
-    """
-    # Implementation for loading data from the specified path
-    file_path = f"./data/Yt_data_{date.today()}.json"  # Replace with the actual path to your data files
+def load_data():
+
+    file_path = f"./data/YT_data_{date.today()}.json"
 
     try:
-        logger.info(f"Loading data from {file_path} into the data warehouse.")
+        logger.info(f"Processing file: YT_data_{date.today()}")
 
-        with open(file_path, 'r', encoding='utf-8') as raw_data:
+        with open(file_path, "r", encoding="utf-8") as raw_data:
             data = json.load(raw_data)
-
-        return data  # Return the loaded data for further processing
+        return data
     except FileNotFoundError:
-        logger.error(f"File not found: {file_path}. Please check the path and try again.")
+        logger.error(f"File not found:{file_path}")
         raise
     except json.JSONDecodeError:
-        logger.error(f"Error decoding JSON from file: {file_path}. Please check the file format.")
+        logger.error(f"Invalid JSON in file: {file_path}")
         raise
