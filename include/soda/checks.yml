@@ -16,3 +16,9 @@ checks for yt_api:
         SELECT count(*)
         FROM yt_api
         WHERE "Comments_Count" > "Video_Views"
+
+  - row_count > 0:
+      name: "Row count greater than 0"
+      row_count_query: |
+        SELECT count(*)
+        FROM yt_api
